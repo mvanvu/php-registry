@@ -1,0 +1,24 @@
+{
+    "name": "mvanvu/php-registry",
+    "type": "php",
+    "description": "Php Registry package",
+    "keywords": ["php", "registry"],
+    "homepage": "https://github.com/mvanvu/php-registry",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mai Vu",
+            "email": "maivubc@gmail.com",
+            "role": "Developer"
+        }
+    ],    
+    "require": {
+         "php": "^5.4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "MaiVu\\Php\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+}
