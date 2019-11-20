@@ -19,7 +19,7 @@ class Registry
 	 */
 	public function parse($data)
 	{
-		return self::parseData($data);
+		return static::parseData($data);
 	}
 
 	public static function parseData($data)
