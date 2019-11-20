@@ -34,11 +34,7 @@ class Registry
 		}
 		elseif (is_string($data))
 		{
-			if (strpos($data, '{') === 0 || strpos($data, '[') === 0)
-			{
-				$data = json_decode($data, true) ?: [];
-			}
-			elseif (is_file($data))
+			if (is_file($data))
 			{
 				if (preg_match('/\.php$/', $data))
 				{
@@ -48,6 +44,10 @@ class Registry
 				{
 					$data = json_decode(file_get_contents($data), true) ?: [];
 				}
+			}
+			elseif (strpos($data, '{') === 0 || strpos($data, '[') === 0)
+			{
+				$data = json_decode($data, true) ?: [];
 			}
 		}
 
@@ -66,31 +66,43 @@ class Registry
 		return $this;
 	}
 
-	public function get($path, $defaultValue = null)
+	public function get($path, $defaultValue = null, $filter = null)
 	{
 		if (false === strpos($path, '.'))
 		{
-			return array_key_exists($path, $this->data) ? $this->data[$path] : $defaultValue;
+			$data = array_key_exists($path, $this->data) ? $this->data[$path] : $defaultValue;
+		}
+		else
+		{
+			$keys = explode('.', $path);
+			$data = $this->data;
+
+			foreach ($keys as $key)
+			{
+				if (!isset($data[$key]))
+				{
+					return $defaultValue;
+				}
+
+				$data = $data[$key];
+			}
 		}
 
-		$keys = explode('.', $path);
-		$data = $this->data;
-
-		foreach ($keys as $key)
+		if ($filter)
 		{
-			if (!isset($data[$key]))
-			{
-				return $defaultValue;
-			}
-
-			$data = $data[$key];
-		}		
+			$data = Filter::clean($data, $filter);
+		}
 
 		return $data;
 	}
 
-	public function set($path, $value)
+	public function set($path, $value, $filter = null)
 	{
+		if ($filter)
+		{
+			$value = Filter::clean($value, $filter);
+		}
+
 		if (false === strpos($path, '.'))
 		{
 			$this->data[$path] = $value;

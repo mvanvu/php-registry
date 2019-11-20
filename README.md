@@ -1,5 +1,22 @@
-# php-registry
+# Php array native registry
 
+## Installation via Composer
+
+```json
+{
+	"require": {
+		"mvanvu/php-registry": "~1.0"
+	}
+}
+```
+
+Alternatively, from the command line:
+
+```sh
+composer require mvanvu/php-registry
+```
+
+## Usage
 ``` php
 use MaiVu\Php\Registry;
 
@@ -24,6 +41,29 @@ $registry->has('foo');
 // or
 $registry->has('foo.bar');
 
+```
+
+## With filter see more (https://github.com/mvanvu/php-filter)
+
+``` php
+// Syntax
+// Get and filter
+$registry->get($var, $defaultValue, $filterType);
+
+// Set and filter
+$registry->set($var, $value, $filterType);
+
+// Example
+
+// Return 'john.doe@example.com'
+$registry = new Registry(['email' => 'john(.doe)@exa//mple.com']);
+$email = $registry->get('email', null, 'email');
+
+// Set and filter
+$registry->set('email', 'john(.doe)@exa//mple.com', 'email');
+
+// Return 'john.doe@example.com'
+echo $registry->get('email');
 ```
 
 ## Initialise data
@@ -94,20 +134,4 @@ var_dump($registry->toArray());
 // To json string
 var_dump($registry->toString());
 
-```
-
-## Installation via Composer
-
-```json
-{
-	"require": {
-		"mvanvu/php-registry": "~1.0"
-	}
-}
-```
-
-Alternatively, from the command line:
-
-```sh
-composer require mvanvu/php-registry
 ```
