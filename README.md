@@ -33,7 +33,6 @@ use MaiVu\Php\Registry;
 
 $registry = new Registry($data);
 
-/** 
 $data is an array
 $data = ['foo' => 'bar'];
 
@@ -51,7 +50,7 @@ $data = 'path/to/file/data.php';
 
 or is json file
 $data = 'path/to/file/data.json';
-*/
+
 ```
 
 #### Merge another Registry
