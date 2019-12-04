@@ -220,4 +220,16 @@ class Registry implements \ArrayAccess
 
 		return $this;
 	}
+
+	public function __get($name)
+	{
+		$data = $this->get($name);
+
+		if (is_array($data))
+		{
+			return new Registry($data);
+		}
+
+		return $data;
+	}
 }
