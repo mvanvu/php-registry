@@ -2,7 +2,7 @@
 
 namespace MaiVu\Php;
 
-class Registry
+class Registry implements \ArrayAccess
 {
 	/** @var array */
 	protected $data = [];
@@ -34,7 +34,11 @@ class Registry
 		}
 		elseif (is_string($data))
 		{
-			if (is_file($data))
+			if (strpos($data, '{') === 0 || strpos($data, '[') === 0)
+			{
+				$data = json_decode($data, true) ?: [];
+			}
+			elseif (is_file($data))
 			{
 				if (preg_match('/\.php$/', $data))
 				{
@@ -44,10 +48,6 @@ class Registry
 				{
 					$data = json_decode(file_get_contents($data), true) ?: [];
 				}
-			}
-			elseif (strpos($data, '{') === 0 || strpos($data, '[') === 0)
-			{
-				$data = json_decode($data, true) ?: [];
 			}
 		}
 
@@ -164,5 +164,60 @@ class Registry
 	public function __toString()
 	{
 		return $this->toString();
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function offsetExists($offset)
+	{
+		return $this->has($offset);
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function offsetGet($offset)
+	{
+		return $this->get($offset);
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function offsetSet($offset, $value)
+	{
+		return $this->set($offset, $value);
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function offsetUnset($offset)
+	{
+		if (false !== strpos($offset, '.'))
+		{
+			$offsets = explode('.', $offset);
+			$data    = &$this->data;
+			$endKey  = array_pop($offsets);
+
+			foreach ($offsets as $offset)
+			{
+				if (!isset($data[$offset]))
+				{
+					return $this;
+				}
+
+				$data = &$data[$offset];
+			}
+
+			unset($data[$endKey]);
+		}
+		else
+		{
+			unset($this->data[$offset]);
+		}
+
+		return $this;
 	}
 }
