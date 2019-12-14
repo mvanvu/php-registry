@@ -122,6 +122,28 @@ $arrayData = Registry::parseData('path/to/file/data.json');
 
 ```
 
+#### ArrayAccess (From 1.0.1)
+
+``` php
+use MaiVu\Php\Registry;
+$registry = new Registry(['foo' => 'bar']);
+echo $registry['foo'] // => 'bar'
+
+// The same
+echo $registry->foo // => 'bar'
+
+// Append data
+$registry['foo.child'] = ['foo2' => 'bar2'];
+$child = $registry['foo.child'];
+
+// Result the same with new Registry(['foo2' => 'bar2']);
+var_dump($child);
+
+// result => 'bar2'
+echo $registry->foo->child->foo2;
+
+```
+
 #### Dump data
 
 ``` php
