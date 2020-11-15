@@ -2,7 +2,9 @@
 
 namespace MaiVu\Php;
 
-class Registry implements \ArrayAccess
+use ArrayAccess;
+
+class Registry implements ArrayAccess
 {
 	/** @var array */
 	protected $data = [];
@@ -40,13 +42,24 @@ class Registry implements \ArrayAccess
 			}
 			elseif (is_file($data))
 			{
-				if (preg_match('/\.php$/', $data))
+				preg_match('/\.([a-z]+)$/i', $data, $matches);
+
+				if (!empty($matches[1]))
 				{
-					$data = include $data;
-				}
-				elseif (preg_match('/\.json$/', $data))
-				{
-					$data = json_decode(file_get_contents($data), true) ?: [];
+					switch ($matches[1])
+					{
+						case 'php':
+							$data = include $data;
+							break;
+
+						case 'json':
+							$data = json_decode(file_get_contents($data), true) ?: [];
+							break;
+
+						case 'ini':
+							$data = parse_ini_file($data);
+							break;
+					}
 				}
 			}
 		}
@@ -59,11 +72,85 @@ class Registry implements \ArrayAccess
 		return is_array($data) ? $data : [$data];
 	}
 
+	public function toArray()
+	{
+		return $this->data;
+	}
+
+	public static function request()
+	{
+		static $request = null;
+
+		if (null === $request)
+		{
+			$request = new Registry(
+				[
+					'get'     => &$_GET,
+					'post'    => &$_POST,
+					'request' => &$_REQUEST,
+					'server'  => &$_SERVER,
+					'files'   => &$_FILES,
+				]
+			);
+		}
+
+		return $request;
+	}
+
 	public function merge($data)
 	{
 		$this->data = array_merge($this->data, $this->parse($data));
 
 		return $this;
+	}
+
+	public function __toString()
+	{
+		return $this->toString();
+	}
+
+	public function toString()
+	{
+		return json_encode($this->data);
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function offsetExists($offset)
+	{
+		return $this->has($offset);
+	}
+
+	public function has($path)
+	{
+		if (false === strpos($path, '.'))
+		{
+			return array_key_exists($path, $this->data);
+		}
+
+		$keys = explode('.', $path);
+		$data = $this->data;
+
+		foreach ($keys as $key)
+		{
+			if (!array_key_exists($key, $data))
+			{
+				return false;
+			}
+
+			$data = $data[$key];
+		}
+
+		return true;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function offsetGet($offset)
+	{
+		return $this->get($offset);
 	}
 
 	public function get($path, $defaultValue = null, $filter = null)
@@ -96,6 +183,14 @@ class Registry implements \ArrayAccess
 		return $data;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
+	public function offsetSet($offset, $value)
+	{
+		return $this->set($offset, $value);
+	}
+
 	public function set($path, $value, $filter = null)
 	{
 		if ($filter)
@@ -126,68 +221,6 @@ class Registry implements \ArrayAccess
 		}
 
 		return $this;
-	}
-
-	public function has($path)
-	{
-		if (false === strpos($path, '.'))
-		{
-			return array_key_exists($path, $this->data);
-		}
-
-		$keys = explode('.', $path);
-		$data = $this->data;
-
-		foreach ($keys as $key)
-		{
-			if (!array_key_exists($key, $data))
-			{
-				return false;
-			}
-
-			$data = $data[$key];
-		}
-
-		return true;
-	}
-
-	public function toArray()
-	{
-		return $this->data;
-	}
-
-	public function toString()
-	{
-		return json_encode($this->data);
-	}
-
-	public function __toString()
-	{
-		return $this->toString();
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	public function offsetExists($offset)
-	{
-		return $this->has($offset);
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	public function offsetGet($offset)
-	{
-		return $this->get($offset);
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	public function offsetSet($offset, $value)
-	{
-		return $this->set($offset, $value);
 	}
 
 	/**

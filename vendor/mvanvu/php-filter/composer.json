@@ -1,12 +1,13 @@
 {
-  "name": "mvanvu/php-registry",
+  "name": "mvanvu/php-filter",
   "type": "php",
-  "description": "Php Registry package",
+  "description": "Php Input Filter package",
   "keywords": [
     "php",
-    "registry"
+    "filter",    
+    "input"
   ],
-  "homepage": "https://github.com/mvanvu/php-registry",
+  "homepage": "https://github.com/mvanvu/php-filter",
   "license": "MIT",
   "authors": [
     {
@@ -16,9 +17,7 @@
     }
   ],
   "require": {
-    "php": ">=5.4.0",
-    "mvanvu/php-filter": "~1.0",
-    "ext-json": "*"
+    "php": ">=5.4.0"
   },
   "autoload": {
     "psr-4": {
