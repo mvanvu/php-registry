@@ -32,7 +32,7 @@ class Registry implements ArrayAccess
 		}
 		elseif (is_object($data))
 		{
-			$data = (array) $data;
+			$data = is_callable([$data, 'toArray']) ? $data->toArray() : (array) $data;
 		}
 		elseif (is_string($data))
 		{

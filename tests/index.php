@@ -10,3 +10,16 @@ echo '<pre>' . print_r($request->get->toArray(), true) . '</pre>';
 echo '<pre>' . print_r($request->post->toArray(), true) . '</pre>';
 echo '<pre>' . print_r($request->server->toArray(), true) . '</pre>';
 echo '<pre>' . print_r($request->files->toArray(), true) . '</pre>';
+
+class CustomToArray
+{
+	public $data = ['foo' => 'bar'];
+
+	public function toArray()
+	{
+		return $this->data;
+	}
+}
+
+$registry = new Registry(new CustomToArray);
+echo '<pre>' . print_r($registry->toArray(), true) . '</pre>';
