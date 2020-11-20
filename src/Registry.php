@@ -97,6 +97,25 @@ class Registry implements ArrayAccess
 		return $request;
 	}
 
+	public static function session()
+	{
+		static $session = null;
+
+		if (null === $session)
+		{
+			$session = new SessionRegistry;
+		}
+
+		return $session;
+	}
+
+	public function map(array &$data)
+	{
+		$this->data = &$data;
+
+		return $this;
+	}
+
 	public function merge($data)
 	{
 		$this->data = array_merge($this->data, $this->parse($data));
