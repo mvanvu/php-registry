@@ -103,7 +103,7 @@ class Registry implements ArrayAccess
 
 		if (null === $session)
 		{
-			$session = new SessionRegistry;
+			$session = new RegistrySession;
 		}
 
 		return $session;

@@ -2,7 +2,7 @@
 
 namespace MaiVu\Php;
 
-class SessionRegistry
+class RegistrySession
 {
 	/** @var boolean */
 	protected $isActive = false;
@@ -14,7 +14,7 @@ class SessionRegistry
 	{
 		$this->data = new Registry;
 
-		if ($this->isActive = session_status() === PHP_SESSION_ACTIVE)
+		if ($this->isActive = (session_status() === PHP_SESSION_ACTIVE))
 		{
 			$this->data->map($_SESSION);
 		}
@@ -22,7 +22,7 @@ class SessionRegistry
 
 	public function start()
 	{
-		if (!$this->isActive && $this->isActive = session_start())
+		if (!$this->isActive && ($this->isActive = session_start()))
 		{
 			$this->data->map($_SESSION);
 		}
@@ -33,14 +33,21 @@ class SessionRegistry
 	public function getFlash($name, $default = null)
 	{
 		$value = $this->get($name, $default);
-		unset($this->data[$name]);
+		$this->remove($name);
 
 		return $value;
 	}
 
 	public function get($name, $default = null)
 	{
-		return $this->isActive ? $this->data->get($name, $default) : $default;
+		return $this->data->get($name, $default);
+	}
+
+	public function remove($name)
+	{
+		unset($this->data[$name]);
+
+		return $this;
 	}
 
 	public function set($name, $value)
