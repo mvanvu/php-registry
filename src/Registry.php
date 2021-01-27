@@ -6,25 +6,35 @@ use ArrayAccess;
 
 class Registry implements ArrayAccess
 {
-	/** @var array */
-	protected $data = [];
-
-	public function __construct($data = null)
-	{
-		$this->data = $this->parse($data);
-	}
+	/**
+	 * @var string
+	 */
+	protected $separator = '.';
 
 	/**
-	 * @param $data
-	 *
-	 * @return array
+	 * @var array
 	 */
-	public function parse($data)
+	protected $data = [];
+
+	public function __construct($data = [], string $separator = '.')
+	{
+		$this->separator = $separator;
+		$this->setData($data);
+	}
+
+	public function setData($data): Registry
+	{
+		$this->data = $this->parse($data);
+
+		return $this;
+	}
+
+	public function parse($data): array
 	{
 		return static::parseData($data);
 	}
 
-	public static function parseData($data)
+	public static function parseData($data): array
 	{
 		if ($data instanceof Registry)
 		{
@@ -69,15 +79,15 @@ class Registry implements ArrayAccess
 			return [];
 		}
 
-		return is_array($data) ? $data : [$data];
+		return (array) $data;
 	}
 
-	public function toArray()
+	public function toArray(): array
 	{
 		return $this->data;
 	}
 
-	public static function request()
+	public static function request(): Registry
 	{
 		static $request = null;
 
@@ -97,7 +107,7 @@ class Registry implements ArrayAccess
 		return $request;
 	}
 
-	public static function session()
+	public static function session(): RegistrySession
 	{
 		static $session = null;
 
@@ -109,16 +119,37 @@ class Registry implements ArrayAccess
 		return $session;
 	}
 
-	public function map(array &$data)
+	public function clear(): Registry
+	{
+		$this->data = [];
+
+		return $this;
+	}
+
+	public function map(array &$data): Registry
 	{
 		$this->data = &$data;
 
 		return $this;
 	}
 
-	public function merge($data)
+	public function isEmpty(): bool
 	{
-		$this->data = array_merge($this->data, $this->parse($data));
+		return empty($this->data);
+	}
+
+	public function merge($data, $recursive = false): Registry
+	{
+		$data = $this->parse($data);
+
+		if ($recursive)
+		{
+			$this->data = array_merge_recursive($this->data, $data);
+		}
+		else
+		{
+			$this->data = array_merge($this->data, $data);
+		}
 
 		return $this;
 	}
@@ -141,14 +172,14 @@ class Registry implements ArrayAccess
 		return $this->has($offset);
 	}
 
-	public function has($path)
+	public function has($path): bool
 	{
-		if (false === strpos($path, '.'))
+		if (false === strpos($path, $this->separator))
 		{
 			return array_key_exists($path, $this->data);
 		}
 
-		$keys = explode('.', $path);
+		$keys = explode($this->separator, $path);
 		$data = $this->data;
 
 		foreach ($keys as $key)
@@ -174,13 +205,13 @@ class Registry implements ArrayAccess
 
 	public function get($path, $defaultValue = null, $filter = null)
 	{
-		if (false === strpos($path, '.'))
+		if (false === strpos($path, $this->separator))
 		{
 			$data = array_key_exists($path, $this->data) ? $this->data[$path] : $defaultValue;
 		}
 		else
 		{
-			$keys = explode('.', $path);
+			$keys = explode($this->separator, $path);
 			$data = $this->data;
 
 			foreach ($keys as $key)
@@ -217,13 +248,13 @@ class Registry implements ArrayAccess
 			$value = Filter::clean($value, $filter);
 		}
 
-		if (false === strpos($path, '.'))
+		if (false === strpos($path, $this->separator))
 		{
 			$this->data[$path] = $value;
 		}
 		else
 		{
-			$keys = explode('.', $path);
+			$keys = explode($this->separator, $path);
 			$data = &$this->data;
 
 			foreach ($keys as $key)
@@ -247,9 +278,9 @@ class Registry implements ArrayAccess
 	 */
 	public function offsetUnset($offset)
 	{
-		if (false !== strpos($offset, '.'))
+		if (false !== strpos($offset, $this->separator))
 		{
-			$offsets = explode('.', $offset);
+			$offsets = explode($this->separator, $offset);
 			$data    = &$this->data;
 			$endKey  = array_pop($offsets);
 
@@ -279,9 +310,14 @@ class Registry implements ArrayAccess
 
 		if (is_array($data))
 		{
-			return new Registry($data);
+			return Registry::create($data, $this->separator);
 		}
 
 		return $data;
+	}
+
+	public static function create($data = null, $separator = '.'): Registry
+	{
+		return new Registry($data, $separator);
 	}
 }

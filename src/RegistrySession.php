@@ -4,10 +4,14 @@ namespace MaiVu\Php;
 
 class RegistrySession
 {
-	/** @var boolean */
+	/**
+	 * @var boolean
+	 */
 	protected $isActive = false;
 
-	/** @var Registry */
+	/**
+	 * @var Registry
+	 */
 	protected $data;
 
 	public function __construct()
